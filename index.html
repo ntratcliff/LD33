@@ -11,13 +11,17 @@
                 "desc": "Returns a list of commands, or information about a command.",
                 "usage": "help <command>"
             },
-            "look": {
+            "inspect": {
                 "desc": "Forces your host to inspect an object.",
-                "usage": "look <object>"
+                "usage": "inspect <object>"
             },
             "take": {
                 "desc": "Coherces your host into picking up an object.",
                 "usage": "take <object>"
+            },
+            "put": {
+                "desc": "Puts down an object held by your host.",
+                "usage": "put <object>"
             },
             "toss": {
                 "desc": "Strongly suggests to your host that throwing an object is a good idea.",
@@ -32,11 +36,10 @@
         var rooms = {
             "bedroom": {
                 "desc": "A mid-sized appartment bedroom furnished with a [[b;;;]bed], and [[b;;;]nightstand]. There is an [[b;;;]alarmclock] on the [[b;;;]nightstand]. Light is streaming in through a [[b;;;]window] on the wall.",
-                "objects": ["host", "room", "alarmclock", "nightstand", "window"],
+                "objects": ["host", "room", "alarmclock", "nightstand", "window", "bed"],
             }
         }
 
-        var welcometext = "__/\\\________/\\\_______/\\\\\__________/\\\\\\\\\\\____/\\\\\\\\\\\\\\\_        \r _\/\\\_______\/\\\_____/\\\///\\\______/\\\/////////\\\_\///////\\\/////__       \r  _\/\\\_______\/\\\___/\\\/__\///\\\___\//\\\______\///________\/\\\_______      \r   _\/\\\\\\\\\\\\\\\__/\\\______\//\\\___\////\\\_______________\/\\\_______     \r    _\/\\\/////////\\\_\/\\\_______\/\\\______\////\\\____________\/\\\_______    \r     _\/\\\_______\/\\\_\//\\\______/\\\__________\////\\\_________\/\\\_______   \r      _\/\\\_______\/\\\__\///\\\__/\\\_____/\\\______\//\\\________\/\\\_______  \r       _\/\\\_______\/\\\____\///\\\\\/_____\///\\\\\\\\\\\/_________\/\\\_______ \r        _\///________\///_______\/////_________\///////////___________\///________";
         //$.ajax({
         //    dataType: "json",
         //    url: "man.json",
@@ -92,6 +95,7 @@
                 {
                     "canTake": true,
                     "canToss": false,
+                    "holding": null
                 },
                 []),
             "room": new GameObject(
@@ -109,7 +113,7 @@
                 "nightstand",
                 "A wooden nightstand.",
                 {
-                    "canTake": false,
+                    "canTake": true,
                     "canToss": true,
                     "hasAlarmClock": true
                 },
@@ -121,6 +125,15 @@
                 {
                     "canTake": false,
                     "canToss": false
+                },
+                []),
+            "bed": new GameObject(
+                5,
+                "bed",
+                "A bed.",
+                {
+                    "canTake":false,
+                    "canToss":false
                 },
                 []),
 
@@ -145,12 +158,12 @@
         }
 
         gameObjects.alarmclock.onHit = function (term) {
-            if (this.properties.ringstatus = "ringing") {
+            if (this.properties.ringstatus == "ringing") {
                 this.properties.ringstatus = "not ringing";
                 term.echo("The [[b;;;]alarmclock] stops ringing.");
             }
             else {
-                term.echo("Nothing happens to the [[b;;;]alarmclock].");
+                term.echo("Your host hits [[b;;;]alarmclock].");
             }
         }
 
@@ -231,9 +244,9 @@
                             }
                         }
                     }
-
+                    
                 },
-                look: function (arg) {
+                inspect: function (arg) {
                     if (arg) {
                         if (roomObjects[arg]) {
                             this.echo(roomObjects[arg].getDescription());
@@ -248,8 +261,24 @@
                 },
                 take: function (arg) {
                     if (arg) {
-                        if (roomObjects[arg] && roomObjects[arg].properties.canTake) {
+                        if (roomObjects[arg] 
+                            && roomObjects[arg].properties.canTake 
+                            && roomObjects.host.properties.holding == null) {
+                            roomObjects.host.properties.holding = roomObjects[arg];
                             this.echo("Your host picks up [[b;;;]" + arg + "].");
+                        }
+                        else if (roomObjects[arg] 
+                            && roomObjects.host.properties.holding != null 
+                            && roomObjects.host.properties.holding != roomObjects[arg])
+                        {
+                            this.echo("Your host is currently too occupied with the [[b;;;]" + roomObjects.host.properties.holding.name + "] it is holding.");
+                        }
+                        else if (roomObjects[arg]
+                            && roomObjects.host.properties.holding == roomObjects[arg])
+                        {
+                            this.echo("Your host is already holding [[b;;;]" + arg + "].");
+                            this.echo("There is not yet a way to hold two of the same item at the same time.");
+                            this.echo("If you figure one out, publish a paper on it.");
                         }
                         else if (roomObjects[arg]) {
                             this.echo("Your host can not pick up [[b;;;]" + arg + "].");
@@ -262,10 +291,25 @@
                         this.echo("Your host grasps at the air aimlessly.");
                     }
                 },
+                put: function (arg) {
+                    if (arg) {
+                        if (roomObjects.host.properties.holding == roomObjects[arg]) {
+                            roomObjects.host.properties.holding = null;
+                            this.echo("Your host drops [[b;;;]" + arg + "].");
+                        }
+                        else {
+                            this.echo("Your host is not holding [[b;;;]" + arg + "].");
+                        }
+                    }
+                },
                 toss: function (arg) {
                     if (arg) {
-                        if (roomObjects[arg] && roomObjects[arg].properties.canToss) { //todo: check if host is holding object
+                        if (roomObjects[arg] && roomObjects[arg].properties.canToss && roomObjects.host.properties.holding == roomObjects[arg]) { //todo: check if host is holding object
+                            roomObjects.host.properties.holding = null;
                             roomObjects[arg].onTossed(this);
+                        }
+                        else if (roomObjects[arg] && roomObjects.host.properties.holding != roomObjects[arg]) {
+                            this.echo("Your host is not holding [[b;;;]" + arg + "].");
                         }
                         else if (roomObjects[arg]) {
                             this.echo("Your host can not toss [[b;;;]" + arg + "].");
@@ -299,6 +343,7 @@
                     }, 1000);
                     this.resume();
                 }
+
             },
             {
                 prompt: '>',
