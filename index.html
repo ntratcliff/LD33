@@ -43,6 +43,10 @@
                 "desc": "Discards this host and starts with a fresh one.",
                 "usage": "restart"
             },
+            "about": {
+                "desc": "Prints information about the current HOSTOS system.",
+                "usage": "about"
+            },
         };
 
         var rooms = {
@@ -912,6 +916,24 @@
                         echo("[[b;;;]" + line + "]");
                     }
 
+                },
+                about: function () {
+                    this.echo("[[b;;;]HOST]");
+                    this.echo("Designed and written by:  [[b;;;]Noah Ratcliff]");
+                    this.echo("Designed and written for: [[b;;;]Ludum Dare 33]");
+                    this.echo();
+                    this.echo(" BEGIN CONTACT INFO");
+                    this.echo("====================");
+                    this.echo("[[b;;;]Twitter]: @fussycashew");
+                    this.echo("[[b;;;]Website]: http://nratcliff.com");
+                    this.echo("[[b;;;]Email]:   me@nratcliff.com");
+                    this.echo();
+                    this.echo("[[b;;;]Ludum Dare]: http://ludumdare.com/");
+                    this.echo("--------------------");
+                    this.echo("  END CONTACT INFO");
+                    this.echo();
+                    this.echo("  Source code available at:");
+                    this.echo("https://github.com/ntratcliff");
                 }
             },
             {
