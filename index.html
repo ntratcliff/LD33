@@ -15,9 +15,9 @@
                 "desc": "Forces your host to inspect an object.",
                 "usage": "inspect <object>"
             },
-            "take": {
-                "desc": "Coherces your host into picking up an object.",
-                "usage": "take <object>"
+            "grab": {
+                "desc": "Coherces your host into grabbing up an object.",
+                "usage": "grab <object>"
             },
             "put": {
                 "desc": "Puts down an object held by your host.",
@@ -84,7 +84,7 @@
             }
 
             this.onUse = function (term) {
-                term.echo("There is not apparent use for [[b;;;]" + name + "] now.");
+                term.echo("There is no apparent use for [[b;;;]" + name + "] now.");
             }
         }
 
@@ -352,7 +352,7 @@
                         echo("Your host stares blankly into space.");
                     }
                 },
-                take: function (arg) {
+                grab: function (arg) {
                     if (arg) {
                         if (roomObjects[arg] 
                             && roomObjects[arg].properties.canTake 
