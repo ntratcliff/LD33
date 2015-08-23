@@ -44,8 +44,16 @@
         var rooms = {
             "bedroom": {
                 "desc": "A mid-sized appartment bedroom furnished with a [[b;;;]bed], and [[b;;;]nightstand]. There is an [[b;;;]alarmclock] on the [[b;;;]nightstand]. Light is streaming in through a [[b;;;]window] on the wall.",
-                "objects": ["host", "room", "alarmclock", "nightstand", "window", "bed"],
-            }
+                "objects": ["host", "room", "alarmclock", "nightstand", "window", "bed", "door"],
+            },
+            "street": {
+                "desc": "It is a bright and sunny day. Your host thinks it is a lovely day to go to work.\n Here, your host finds a [[b;;;]busstop] and an unknown [[b;;;]human].",
+                "objects": ["human", "busstop"], 
+            },
+            "office": {
+                "desc": "\"Every day is a great day for office work!\" thinks your host. Your host may be too optimistic.\n Here, yours host finds its [[b;;;]boss], a [[b;;;]coworker], its [[b;;;]cubicle], and the [[b;;;]door].",
+                "objects": ["boss", "coworker", "cubicle", "door"],
+            },
         }
 
         //$.ajax({
@@ -109,6 +117,8 @@
                     "canToss": false,
                     "holding": null,
                     "isOnDrugs": false,
+                    "isBloody": false,
+                    "isDressed": false,
                 },
                 []),
             "room": new GameObject(
@@ -139,6 +149,7 @@
                 {
                     "canTake": false,
                     "canToss": false,
+                    "broken": false,
                 },
                 []),
             "bed": new GameObject(
@@ -146,8 +157,8 @@
                 "bed",
                 "A bed.",
                 {
-                    "canTake":false,
-                    "canToss":false,
+                    "canTake": false,
+                    "canToss": false,
                 },
                 []),
             "drugs": new GameObject(
@@ -155,12 +166,66 @@
                 "drugs",
                 "Probably not legal, and probably very fun.",
                 {
-                    "canTake":true,
-                    "canToss":true,
-                    
+                    "canTake": true,
+                    "canToss": true,
+
                 },
                 []),
-
+            "door": new GameObject(
+                7,
+                "door",
+                "A door.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                },
+                []),
+            "human": new GameObject(
+                8,
+                "human",
+                "A human. It is of average height and weight. It is not ringing.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                },
+                []),
+            "boss": new GameObject(
+                9,
+                "boss",
+                "Your host's employer. Your host holds the opinion of [[b;;;]boss] in high regard.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                },
+                []),
+            "coworker": new GameObject(
+                10,
+                "coworker",
+                "A human who works in the same office as your host. It looks as if it is not doing any productive work.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                    "dinnerPlans": false,
+                },
+                []),
+            "cubicle": new GameObject(
+                11,
+                "cubicle",
+                "A standard workstation. There are many like it throughout the office floor.\n However, this cubicle is your host's.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                },
+                []),
+            "busstop": new GameObject(
+                12,
+                "busstop",
+                "A place where humans wait for transportation. Your host requires this transportation to get to work.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                },
+                []),
         };
 
         gameObjects.alarmclock.onTossed = function (term) {
@@ -238,10 +303,57 @@
             echo("Inside, it finds [[b;;;]drugs].");
         }
 
+        function dropNonTransferrableObjects(term) {
+            if (roomObjects.host.properties.holding != roomObjects["drugs"]) { //put down object (if it's not drugs) so it can be removed
+                term.exec("put " + roomObjects.host.properties.holding.name, true);
+            }
+        }
+
+        gameObjects.door.onUse = function (term) {
+            //go to street
+            dropNonTransferrableObjects(term);
+            removeFromRoom("alarmclock");
+            removeFromRoom("nightstand");
+            removeFromRoom("window");
+            removeFromRoom("bed");
+            removeFromRoom("door");
+            term.pause();
+            echo("Your host opens the [[b;;;]door], and exits through it.");
+            setTimeout(function () { echo("..."); }, 1000);
+            setTimeout(function () {
+                loadRoom("street");
+                echo("Your host enters [[b;;;]street].");
+                roomObjects["street"] = roomObjects["room"];
+                term.resume();
+            }, 2500);
+        }
+
+        gameObjects.busstop.onUse = function (term) {
+            //go to office
+            dropNonTransferrableObjects(term);
+            removeFromRoom("human");
+            removeFromRoom("busstop");
+            removeFromRoom("street");
+            term.pause();
+            echo("A bus arrives, and your host boards.");
+            setTimeout(function () { echo("..."); }, 1000);
+            setTimeout(function () {
+                loadRoom("office");
+                echo("Your host enters [[b;;;]office].");
+                roomObjects["office"] = roomObjects["room"];
+                term.resume();
+            }, 2500);
+        }
+
         gameObjects.drugs.onUse = function (term) {
            
             echo("Your host ingests the [[b;;;]drugs].");
+            if (roomObjects.host.properties.holding == this)
+            {
+                roomObjects.host.properties.holding = null;
+            }
             roomObjects["drugs"] = null;
+            
             term.pause();
             setTimeout(function () {
                 echo("...")
@@ -271,6 +383,10 @@
 
         function addToRoom(item){
             roomObjects[item] = jQuery.extend({}, gameObjects[item]);
+        }
+
+        function removeFromRoom(item) {
+            roomObjects[item] = null;
         }
         
         loadRoom("bedroom");
