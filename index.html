@@ -11,6 +11,10 @@
                 "desc": "Returns a list of commands, or information about a command.",
                 "usage": "help <command>"
             },
+            "list": {
+                "desc": "Lists all objects in current area.",
+                "usage": "list"
+            },
             "inspect": {
                 "desc": "Forces your host to inspect an object.",
                 "usage": "inspect <object>"
@@ -436,7 +440,7 @@
             if (roomObjects.host.properties.holding == this)
                 roomObjects.host.properties.holding = null;
 
-            roomObjects["drugs"] = null;
+            removeFromRoom("drugs");
             
             term.pause();
             setTimeout(function () {
@@ -461,7 +465,7 @@
 
             roomObjects.host.properties.isDressed = true;
 
-            roomObjects["clothes"] = null
+            removeFromRoom("clothes");
         }
 
         var currentRoom;
@@ -480,7 +484,7 @@
         }
 
         function removeFromRoom(item) {
-            roomObjects[item] = null;
+            delete roomObjects[item];
         }
         
         function loseGame(term) {
@@ -672,6 +676,22 @@
                 },
                 restart: function () {
                     location.reload();
+                },
+                list: function () {
+                    var line = "";
+                    var charCount = 0;
+                    for (var obj in roomObjects) {
+                        line += obj + " ";
+                        charCount += obj.length;
+                        if (charCount >= 30) {
+                            echo("[[b;;;]"+line+"]");
+                            line = "";
+                            charCount = 0;
+                        }
+                    }
+                    if (charCount > 0) {
+                        echo("[[b;;;]" + line + "]");
+                    }
                 }
             },
             {
