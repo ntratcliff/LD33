@@ -3,7 +3,9 @@ Ludum Dare 33 game, HOST. Designed and developed in under 48 hours for the theme
 
 #Contact
 Website: http://nratcliff.com/
+
 Email: me@nratcliff.com
+
 Twitter: @fussycashew
 
 #License
