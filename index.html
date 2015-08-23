@@ -401,20 +401,33 @@
         }
 
         gameObjects.busstop.onUse = function (term) {
-            //go to office
-            dropNonTransferrableObjects(term);
-            removeFromRoom("human");
-            removeFromRoom("busstop");
-            removeFromRoom("street");
+            //go to office if dressed. Jail if not
+            echo("Your host waits patiently for a bus.");
             term.pause();
-            echo("A bus arrives, and your host boards.");
-            setTimeout(function () { echo("..."); }, 1000);
             setTimeout(function () {
-                loadRoom("office");
-                echo("Your host enters [[b;;;]office].");
-                roomObjects["office"] = roomObjects["room"];
-                term.resume();
-            }, 2500);
+                echo("...");
+                setTimeout(function () {
+                    if (roomObjects.host.properties.isDressed) {
+                        dropNonTransferrableObjects(term);
+                        removeFromRoom("human");
+                        removeFromRoom("busstop");
+                        removeFromRoom("street");
+                        echo("A bus arrives, and your host boards.");
+                        setTimeout(function () { echo("..."); }, 1000);
+                        setTimeout(function () {
+                            loadRoom("office");
+                            echo("Your host enters [[b;;;]office].");
+                            roomObjects["office"] = roomObjects["room"];
+                            term.resume();
+                        }, 2500);
+                    }
+                    else { //jail
+                        echo("A police officer approaches the bus stop cautiously.");
+                        setTimeout(function () { echo("The police officer places your host under arrest for public nudity."); }, 1500);
+                        setTimeout(function () { loseGame(term); }, 3000);
+                    }
+                }, 1000);
+            }, 1000);
         }
 
         gameObjects.drugs.onUse = function (term) {
@@ -470,10 +483,21 @@
             roomObjects[item] = null;
         }
         
+        function loseGame(term) {
+            term.pause();
+            echo("ERROR: Connection to host lost.");
+            roomObjects = new Array(); //empty room
+            setTimeout(function () {
+                echo("You have failed to successfully get your host to work.");
+                echo("You may try again with another host by entering command [[b;;;]restart]");
+                term.resume();
+            }, 1500);
+        }
+
         loadRoom("bedroom");
 
         function echo(msg) {
-            if (msg && roomObjects.host.properties.isOnDrugs) {
+            if (msg && roomObjects.host && roomObjects.host.properties.isOnDrugs) {
                 var replacements = getRandomInt(Math.round(msg.length / 8), Math.round(msg.length / 4))
                 for (i = 0; i < replacements; i++) {
                     
