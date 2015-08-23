@@ -43,15 +43,15 @@
 
         var rooms = {
             "bedroom": {
-                "desc": "A mid-sized appartment bedroom furnished with a [[b;;;]bed], and [[b;;;]nightstand]. There is an [[b;;;]alarmclock] on the [[b;;;]nightstand]. Light is streaming in through a [[b;;;]window] on the wall.",
-                "objects": ["host", "room", "alarmclock", "nightstand", "window", "bed", "door"],
+                "desc": "A mid-sized appartment bedroom furnished with a [[b;;;]bed], [[b;;;]wardrobe], [[b;;]poster], and [[b;;;]nightstand].\nThere is an [[b;;;]alarmclock] on the [[b;;;]nightstand].\nLight is streaming in through a [[b;;;]window] on the wall.\nThere is also a [[b;;;]door].",
+                "objects": ["host", "room", "alarmclock", "nightstand", "window", "bed", "door", "wardrobe", "poster"],
             },
             "street": {
-                "desc": "It is a bright and sunny day. Your host thinks it is a lovely day to go to work.\n Here, your host finds a [[b;;;]busstop] and an unknown [[b;;;]human].",
+                "desc": "It is a bright and sunny day. Your host thinks it is a lovely day to go to work.\nHere, your host finds a [[b;;;]busstop] and an unknown [[b;;;]human].",
                 "objects": ["human", "busstop"], 
             },
             "office": {
-                "desc": "\"Every day is a great day for office work!\" thinks your host. Your host may be too optimistic.\n Here, yours host finds its [[b;;;]boss], a [[b;;;]coworker], its [[b;;;]cubicle], and the [[b;;;]door].",
+                "desc": "\"Every day is a great day for office work!\" thinks your host. Your host may be too optimistic.\nHere, yours host finds its [[b;;;]boss], a [[b;;;]coworker], its [[b;;;]cubicle], and the [[b;;;]door].",
                 "objects": ["boss", "coworker", "cubicle", "door"],
             },
         }
@@ -211,7 +211,7 @@
             "cubicle": new GameObject(
                 11,
                 "cubicle",
-                "A standard workstation. There are many like it throughout the office floor.\n However, this cubicle is your host's.",
+                "A standard workstation. There are many like it throughout the office floor.\nHowever, this cubicle is your host's.",
                 {
                     "canTake": false,
                     "canToss": false,
@@ -221,6 +221,34 @@
                 12,
                 "busstop",
                 "A place where humans wait for transportation. Your host requires this transportation to get to work.",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                },
+                []),
+            "wardrobe": new GameObject(
+                13,
+                "wardrobe",
+                "A wooden wardrobe. Your host is under the impression that if it were to [[b;;;]use] the wardrobe, it would find [[b;;;]clothes].",
+                {
+                    "canTake": false,
+                    "canToss": false,
+                    "used": false,
+                },
+                []),
+            "clothes": new GameObject(
+                14, 
+                "clothes",
+                "A professional work outfit. Your host believes that were it to [[b;;;]use] the [[b;;;]clothes] it would no longer be undressed.",
+                {
+                    "canTake": true,
+                    "canToss": true,
+                },
+                []),
+            "poster": new GameObject(
+                15,
+                "poster",
+                "A poster of the planet pluto with a ring shaped like a heart surrounding it. Your host finds this poster heartwarming and uplifting.\nIt believes there is hope for pluto yet.",
                 {
                     "canTake": false,
                     "canToss": false,
@@ -296,15 +324,50 @@
             this.properties.canToss = false;
         }
 
-        gameObjects.nightstand.onUse = function (term){
+        gameObjects.nightstand.onUse = function (term) {
+            if (this.properties.used) {
+                echo("There is no apparent use for [[b;;;]nightstand] now.");
+                return;
+            }
             addToRoom("drugs");
             this.properties.used = true;
-            echo("Your host opens the nightstand drawer.");
+            echo("Your host opens the [[b;;;]nightstand] drawer.");
             echo("Inside, it finds [[b;;;]drugs].");
         }
 
+        gameObjects.wardrobe.onUse = function (term) {
+            if (this.properties.used) {
+                echo("There is no apparent use for [[b;;;]nightstand] now.");
+                return;
+            }
+            addToRoom("clothes");
+            this.properties.used = true;
+            echo("Your host opens the [[b;;;]wardrobe].");
+            echo("Inside, it finds [[b;;;]clothes].");
+        }
+
+        gameObjects.human.onUse = function (term) {
+            echo("Your host approaches the [[b;;;]human] and attempts to make conversation.");
+            term.pause();
+            setTimeout(function () { echo("..."); }, 1000);
+            setTimeout(function () {
+                if (roomObjects.host.properties.isDressed) {
+                    echo("Your host successfully makes meaningless conversation with the [[b;;;]human].\nYour host feels good about its social skills.");
+                }
+                else {
+                    echo("The [[b;;;]human] screams and runs away.\nYour host feels bad about its terrible social skills.");
+                    roomObjects["human"] = null;
+                    //TODO: remove human from room desc
+                }
+                term.resume();
+            }, 2500);
+        }
+
+        //TODO: hit human
+
         function dropNonTransferrableObjects(term) {
-            if (roomObjects.host.properties.holding != roomObjects["drugs"]) { //put down object (if it's not drugs) so it can be removed
+            if (roomObjects.host.properties.holding != roomObjects["drugs"] 
+                && roomObjects.host.properties.holding != roomObjects["clothes"]) { //put down object (if it's not drugs) so it can be removed
                 term.exec("put " + roomObjects.host.properties.holding.name, true);
             }
         }
@@ -317,6 +380,15 @@
             removeFromRoom("window");
             removeFromRoom("bed");
             removeFromRoom("door");
+            removeFromRoom("wardrobe");
+            removeFromRoom("poster");
+
+            if(roomObjects.host.properties.holding != roomObjects["drugs"])
+                removeFromRoom("drugs");
+
+            if(roomObjects.host.properties.holding != roomObjects["clothes"])
+                removeFromRoom("clothes");
+
             term.pause();
             echo("Your host opens the [[b;;;]door], and exits through it.");
             setTimeout(function () { echo("..."); }, 1000);
@@ -349,9 +421,8 @@
            
             echo("Your host ingests the [[b;;;]drugs].");
             if (roomObjects.host.properties.holding == this)
-            {
                 roomObjects.host.properties.holding = null;
-            }
+
             roomObjects["drugs"] = null;
             
             term.pause();
@@ -368,6 +439,16 @@
             setTimeout(function () {
                 term.resume()
             }, 4500);
+        }
+
+        gameObjects.clothes.onUse = function (term) {
+            echo("Your host dons the [[b;;;]clothes]");
+            if (roomObjects.host.properties.holding == this)
+                room.host.properties.holding = null;
+
+            roomObjects.host.properties.isDressed = true;
+
+            roomObjects["clothes"] = null
         }
 
         var currentRoom;
