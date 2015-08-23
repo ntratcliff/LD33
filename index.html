@@ -369,6 +369,109 @@
 
         //TODO: hit human
 
+        gameObjects.boss.onUse = function (term) {
+            echo("Your host approaches its [[b;;;]boss] and greets it.");
+            term.pause();
+            setTimeout(function () { echo("..."); }, 1000);
+            setTimeout(function () {
+                if (roomObjects.host.properties.isBloody)
+                    echo("Your host's [[b;;;]boss] notes concern over the blood all over your host.");
+                echo("Your host's boss demands that your host get to work.");
+                setTimeout(function () {
+                    echo("Your host is satisfied with the interaction, and feels prepared to work.");
+                    term.resume();
+                }, 1500);
+            }, 2500);
+        }
+
+        gameObjects.coworker.onUse = function (term) {
+            echo("Your host approaches [[b;;;]coworker] and greets it.");
+            term.pause();
+            setTimeout(function () { echo("..."); }, 1000);
+            setTimeout(function () {
+                if (roomObjects.coworker.properties.dinnerPlans) { //go to supply room
+                    if (roomObjects.host.properties.isBloody)
+                        echo("Disregarding the blood covering your host's entire body, its [[b;;;]coworker] engages in conversation with it.");
+                    echo("The [[b;;;]coworker] offers to skip dinner plans.");
+                    setTimeout(function () {
+                        echo("Your host agrees.");
+                    }, 1500);
+                    setTimeout(function () {
+                        echo("The [[b;;;]coworker] invites your host to the supplies room.");
+                    }, 3000);
+                    setTimeout(function () {
+                        echo("Your host agrees.");
+                    }, 4500);
+                    setTimeout(function () { echo("..."); }, 6000);
+                    setTimeout(function () {
+                        echo("Your host now has an intimate relationship.");
+                    }, 7500);
+                    setTimeout(function () {
+                        loseGame(term);
+                    }, 9000)
+                }
+                else { //make dinner plans
+
+                    if (roomObjects.host.properties.isBloody)
+                        echo("Despite your host being covered with blood, its [[b;;;]coworker] engages in conversation with it.");
+                    echo("The [[b;;;]coworker] notes that it does not talk with your host often.");
+                    setTimeout(function () {
+                        echo("Your host agrees.");
+                    }, 1500);
+                    setTimeout(function () {
+                        echo("The [[b;;;]coworker] states that it would like to know your host better.");
+                    }, 3000);
+                    setTimeout(function () {
+                        echo("Your host agrees.");
+                    }, 4500);
+                    setTimeout(function () { echo("..."); }, 6000);
+                    setTimeout(function () {
+                        echo("Your host now has dinner plans.");
+                        roomObjects.coworker.properties.dinnerPlans = true;
+                        term.resume();
+                    }, 7500);
+
+                }
+            }, 2500);
+        }
+
+        gameObjects.boss.onHit = function (term) {
+            term.pause();
+            echo("Your host hits its [[b;;;]boss]");
+            setTimeout(function () {
+                echo("...");
+            }, 1000);
+            setTimeout(function () {
+                echo("Your host's boss becomes enraged and fires your host.");
+            }, 2000);
+            setTimeout(function () {
+                echo("Your host is very distressed at this matter.");
+            }, 3500);
+            setTimeout(function () {
+                loseGame(term);
+            }, 5000);
+        }
+
+        gameObjects.coworker.onHit = function (term) {
+            term.pause();
+            echo("Your host hits [[b;;;]coworker]");
+            setTimeout(function () {
+                echo("...");
+            }, 1000);
+            setTimeout(function () {
+                echo("The [[b;;;]coworker] begins to cry.");
+            }, 2000);
+            setTimeout(function () {
+                echo("Your host's boss becomes enraged and fires your host.");
+            }, 3000);
+            setTimeout(function () {
+                echo("Your host is very distressed at this matter.");
+            }, 4500);
+            setTimeout(function () {
+                loseGame(term);
+            }, 6000);
+        }
+
         function dropNonTransferrableObjects(term) {
             if (roomObjects.host.properties.holding != roomObjects["drugs"] 
                 && roomObjects.host.properties.holding != roomObjects["clothes"]) { //put down object (if it's not drugs) so it can be removed
@@ -377,31 +480,46 @@
         }
 
         gameObjects.door.onUse = function (term) {
-            //go to street
-            dropNonTransferrableObjects(term);
-            removeFromRoom("alarmclock");
-            removeFromRoom("nightstand");
-            removeFromRoom("window");
-            removeFromRoom("bed");
-            removeFromRoom("door");
-            removeFromRoom("wardrobe");
-            removeFromRoom("poster");
+            if (currentRoom == rooms["bedroom"]) {
+                //go to street
+                dropNonTransferrableObjects(term);
+                removeFromRoom("alarmclock");
+                removeFromRoom("nightstand");
+                removeFromRoom("window");
+                removeFromRoom("bed");
+                removeFromRoom("door");
+                removeFromRoom("wardrobe");
+                removeFromRoom("poster");
 
-            if(roomObjects.host.properties.holding != roomObjects["drugs"])
-                removeFromRoom("drugs");
+                if (roomObjects.host.properties.holding != roomObjects["drugs"])
+                    removeFromRoom("drugs");
 
-            if(roomObjects.host.properties.holding != roomObjects["clothes"])
-                removeFromRoom("clothes");
+                if (roomObjects.host.properties.holding != roomObjects["clothes"])
+                    removeFromRoom("clothes");
 
-            term.pause();
-            echo("Your host opens the [[b;;;]door], and exits through it.");
-            setTimeout(function () { echo("..."); }, 1000);
-            setTimeout(function () {
-                loadRoom("street");
-                echo("Your host enters [[b;;;]street].");
-                roomObjects["street"] = roomObjects["room"];
-                term.resume();
-            }, 2500);
+                term.pause();
+                echo("Your host opens the [[b;;;]door], and exits through it.");
+                setTimeout(function () { echo("..."); }, 1000);
+                setTimeout(function () {
+                    loadRoom("street");
+                    echo("Your host enters [[b;;;]street].");
+                    roomObjects["street"] = roomObjects["room"];
+                    term.resume();
+                }, 2000);
+            }
+            else {
+                //leaving office, lose game
+                term.pause();
+                echo("Your host opens the [[b;;;]door], and exits through it.");
+                setTimeout(function () { echo("..."); }, 1000);
+                setTimeout(function () {
+                    echo("Your host has decides that it does not need to work on such a nice day.");
+                    
+                }, 2500);
+                setTimeout(function () {
+                    loseGame(term);
+                }, 4000);
+            }
         }
 
         gameObjects.busstop.onUse = function (term) {
@@ -423,7 +541,7 @@
                             echo("Your host enters [[b;;;]office].");
                             roomObjects["office"] = roomObjects["room"];
                             term.resume();
-                        }, 2500);
+                        }, 2000);
                     }
                     else { //jail
                         echo("A police officer approaches the bus stop cautiously.");
@@ -461,7 +579,7 @@
         gameObjects.clothes.onUse = function (term) {
             echo("Your host dons the [[b;;;]clothes]");
             if (roomObjects.host.properties.holding == this)
-                room.host.properties.holding = null;
+                roomObjects.host.properties.holding = null;
 
             roomObjects.host.properties.isDressed = true;
 
@@ -489,6 +607,7 @@
         
         function loseGame(term) {
             term.pause();
+            echo();
             echo("ERROR: Connection to host lost.");
             roomObjects = new Array(); //empty room
             setTimeout(function () {
@@ -573,7 +692,7 @@
                             echo("There doesn't seem to be a [[b;;;]" + arg + "] around.");
                         }
                     }
-                    else {
+                    else if(roomObjects.host){
                         echo("Your host stares blankly into space.");
                     }
                 },
@@ -605,7 +724,7 @@
                             echo("There is no [[b;;;]" + arg + "] here.");
                         }
                     }
-                    else {
+                    else if (roomObjects.host){
                         echo("Your host grasps at the air aimlessly.");
                     }
                 },
@@ -615,7 +734,7 @@
                             roomObjects.host.properties.holding = null;
                             echo("Your host drops [[b;;;]" + arg + "].");
                         }
-                        else {
+                        else if (roomObjects.host){
                             echo("Your host is not holding [[b;;;]" + arg + "].");
                         }
                     }
@@ -636,7 +755,7 @@
                             echo("There is no [[b;;;]" + arg + "] here.");
                         }
                     }
-                    else {
+                    else if (roomObjects.host){
                         echo("Your host flails their arms.");
                     }
                 },
@@ -649,7 +768,7 @@
                             echo("There is no [[b;;;]" + arg + "] here.");
                         }
                     }
-                    else {
+                    else if (roomObjects.host){
                         echo("Your host punches the air. This is somewhat unnecessary.");
                     }
                 },
@@ -662,7 +781,7 @@
                             echo("There is no [[b;;;]" + arg + "] here.");
                         }
                     }
-                    else {
+                    else if (roomObjects.host) {
                         echo("You can't use nothing.");
                     }
                 },
@@ -692,6 +811,7 @@
                     if (charCount > 0) {
                         echo("[[b;;;]" + line + "]");
                     }
+
                 }
             },
             {
