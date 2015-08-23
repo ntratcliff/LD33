@@ -642,8 +642,10 @@
 
         loadRoom("bedroom");
 
+        var drugCounter = 10;
+
         function echo(msg) {
-            if (msg && roomObjects.host && roomObjects.host.properties.isOnDrugs) {
+            if (msg && roomObjects.host && roomObjects.host.properties.isOnDrugs && drugCounter-- > 0) {
                 var replacements = getRandomInt(Math.round(msg.length / 8), Math.round(msg.length / 4))
                 for (i = 0; i < replacements; i++) {
                     
@@ -652,6 +654,9 @@
                         msg = msg.substr(0, charPlace) + getRandomChar() + msg.substr(charPlace + 1)
                     }
                 }
+            }
+            else if (drugCounter <= 0) {
+                //TODO: replace some descriptions
             }
 
             terminal.echo(msg);
