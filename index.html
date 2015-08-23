@@ -725,6 +725,7 @@
         }
 
         var terminal; //exposed for debug purposes
+        var firstHelpMessage = true;
         $(function () {
             terminal = $('#game-terminal').terminal({
                 help: function (arg) {
@@ -739,27 +740,45 @@
                     }
                     else {
                         if (man) {
+                            if(firstHelpMessage){
+                                
+                                echo(" BEGIN NEW MESSAGE");
+                                echo("===================");
+                                echo("Welcome back, operator 20c109.");
+                                echo("Please be aware, your employment is currently under review due to inability to meet scheduled objectives, as well as excessive physical and emotional damage to hosts.");
+                                echo("Today's host objective is [[b;;;]GO TO WORK].");
+                                echo("Falure to meet this goal with all hosts will likely result in termination.");
+                                echo("-------------------");
+                                echo("  END NEW MESSAGE");
+                                echo();
+                            }
+                            echo("OBJECTIVE: Take host to [[b;;;]work]");
+                            echo();
                             echo("[[b;;;]help]: " + man["help"].desc);
                             echo("Usage: " + man["help"].usage);
                             echo();
                             echo("Commands: ");
                             var line = "";
-                            var charCount = 0;
+                            //var charCount = 0;
                             for (var command in man) {
                                 line += command + " ";
-                                charCount += command.length;
-                                if (charCount >= 30) {
-                                    echo(line);
-                                    line = "";
-                                    charCount = 0;
-                                }
+                                //charCount += command.length;
+                                //if (charCount >= 30) {
+                                //    echo(line);
+                                //    line = "";
+                                //    charCount = 0;
+                                //}
                             }
-                            if (charCount > 0) {
+                            //if (charCount > 0) {
                                 echo(line);
-                            }
+                            //}
 
                             echo();
-                            echo("Protip: You should probably start with the command \"inspect room\"");
+                            if(firstHelpMessage){
+                                firstHelpMessage = false;
+                                echo("Protip: You should probably start with the command \"inspect room\"");
+                            }
+                                
                         }
                     }
                     
