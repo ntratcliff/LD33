@@ -472,6 +472,17 @@
             }, 6000);
         }
 
+        gameObjects.cubicle.onUse = function (term) {
+            term.pause();
+            echo("Your host takes a seat at its cubicle and begins to work.");
+            setTimeout(function () {
+                echo("...");
+            }, 1000);
+            setTimeout(function () {
+                winGame(term);
+            }, 2000);
+        }
+
         function dropNonTransferrableObjects(term) {
             if (roomObjects.host.properties.holding != roomObjects["drugs"] 
                 && roomObjects.host.properties.holding != roomObjects["clothes"]) { //put down object (if it's not drugs) so it can be removed
@@ -604,12 +615,24 @@
         function removeFromRoom(item) {
             delete roomObjects[item];
         }
+
+        function winGame(term) {
+            term.pause();
+            echo();
+            roomObjects = new Array(); //empty room
+            echo("System detects that host has accomplished scheduled goal.");
+            setTimeout(function () {
+                echo("To begin again with another host, type [[b;;;]restart].");
+                term.resume();
+            }, 1500);
+
+        }
         
         function loseGame(term) {
             term.pause();
             echo();
-            echo("ERROR: Connection to host lost.");
             roomObjects = new Array(); //empty room
+            echo("ERROR: Connection to host lost.");
             setTimeout(function () {
                 echo("You have failed to successfully get your host to work.");
                 echo("You may try again with another host by entering command [[b;;;]restart]");
