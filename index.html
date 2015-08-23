@@ -360,14 +360,67 @@
                 }
                 else {
                     echo("The [[b;;;]human] screams and runs away.\nYour host feels bad about its terrible social skills.");
-                    roomObjects["human"] = null;
-                    //TODO: remove human from room desc
+                    removeFromRoom("human");
+                }
+                term.resume();
+            }, 2500);
+        }
+        
+        //TODO: hit human
+
+        var humanHealth = 2;
+        gameObjects.human.onHit = function (term) {
+            echo("Your host hits the [[b;;;]human].");
+            term.pause();
+            setTimeout(function () { echo("..."); }, 1000);
+            setTimeout(function () {
+                if (roomObjects.host.properties.isDressed && humanHealth-- > 0) {
+                    echo("The [[b;;;]human] reataliates, striking your host.");
+                }
+                else if (humanHealth <= 0) {
+                    echo("The [[b;;;]human] appears to be heavily injured from repeated blows, as evidenced by the fact that it is either unconcious or dead.\nAnd that your host is now covered in its blood.");
+                    roomObjects.host.properties.isBloody = true;
+                }
+                else if (!roomObjects.host.properties.isDressed) {
+                    echo("The [[b;;;]human] screams and runs away.\nYour host feels bad about its terrible social skills.");
+                    removeFromRoom("human");
                 }
                 term.resume();
             }, 2500);
         }
 
-        //TODO: hit human
+        var windowHealth = 2;
+        gameObjects.window.onHit = function (term) {
+            if (windowHealth > 0) {
+                windowHealth--;
+                echo("Your host hits the [[b;;;]window]. It takes some damage");
+            }
+            else if (windowHealth == 0) {
+                windowHealth--;
+                echo("The [[b;;;]window] shatters outwards.");
+                roomObjects.window.properties.broken = true;
+                roomObjects.window.description = "Glass pieces and a frame are all that remain of what was once a [[b;;;]window].";
+            }
+            else if (roomObjects.window.properties.broken){
+                echo("Your host can no longer [[b;;;]hit] the [[b;;;]window].");
+            }
+        }
+
+        gameObjects.window.onUse = function (term){
+            if(roomObjects.window.properties.broken){
+                echo("Your host exits through the [[b;;;]window].");
+                term.pause();
+                setTimeout(function(){
+                    echo("...");
+                }, 1000);
+                setTimeout(function(){
+                    loseGame(term);
+                }, 2500)
+            }
+            else{
+                term.echo("There is no apparent use for [[b;;;]window] now.");
+            }
+        }
 
         gameObjects.boss.onUse = function (term) {
             echo("Your host approaches its [[b;;;]boss] and greets it.");
@@ -769,7 +822,7 @@
                 },
                 toss: function (arg) {
                     if (arg) {
-                        if (roomObjects[arg] && roomObjects[arg].properties.canToss && roomObjects.host.properties.holding == roomObjects[arg]) { //todo: check if host is holding object
+                        if (roomObjects[arg] && roomObjects[arg].properties.canToss && roomObjects.host.properties.holding == roomObjects[arg]) {
                             roomObjects.host.properties.holding = null;
                             roomObjects[arg].onTossed(this);
                         }
