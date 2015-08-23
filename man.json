@@ -1,0 +1,10 @@
+{
+	"help": {
+		"desc": "Returns a list of commands, or information about a command.",
+		"usage": "help <command>"
+	},
+	"look": {
+		"desc": "Forces your host to look at an object in their environment.",
+        "usage": "look <object>"
+	}
+}
